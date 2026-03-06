@@ -8,7 +8,7 @@
             <img src="{{ url_for('static', filename='uploads/' + user.avatar) }}" 
                  class="rounded-circle img-thumbnail bg-dark border-secondary mb-3" 
                  width="200" height="200"
-                 onerror="this.src='https://github.com/identicons/${user.username}.png'">
+                 onerror="this.src='https://github.com/identicons/{{ user.username }}.png'">
             <h2 class="h4">@{{ user.username }}</h2>
             <p class="text-muted">{{ user.bio if user.bio else 'No bio yet.' }}</p>
             

@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from models import db, User, Project, ProjectImage
-from forms import RegistrationForm, LoginForm, VerifyForm
+from forms import RegistrationForm, LoginForm, VerifyForm, ProfileEditForm, ProjectForm
 
 app = Flask(__name__)
 
@@ -32,8 +32,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Mail Configuration (Yandex)
 app.config['MAIL_SERVER'] = 'smtp.yandex.ru'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME')

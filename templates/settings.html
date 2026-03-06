@@ -12,7 +12,7 @@
                     <img src="{{ url_for('static', filename='uploads/' + current_user.avatar) }}" 
                          class="rounded-circle img-thumbnail bg-dark border-secondary mb-3" 
                          width="150" height="150"
-                         onerror="this.src='https://github.com/identicons/${current_user.username}.png'">
+                         onerror="this.src='https://github.com/identicons/{{ current_user.username }}.png'">
                     <div class="mb-3">
                         {{ form.avatar.label(class="form-label d-block") }}
                         {{ form.avatar(class="form-control") }}
