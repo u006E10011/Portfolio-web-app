@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('profile', username=project.author.username) }}" class="text-decoration-none">@{{ project.author.username }}</a></li>
+                <li class="breadcrumb-item active text-muted" aria-current="page">{{ project.title }}</li>
+            </ol>
+        </nav>
+
+        <div class="card p-4">
+            <div class="row">
+                <!-- Gallery (Unity Asset Store Style) -->
+                <div class="col-lg-7 mb-4">
+                    <div class="main-image-container mb-3 border border-secondary rounded overflow-hidden">
+                        {% if main_image %}
+                            <img id="mainImage" src="{{ url_for('static', filename='uploads/' + main_image.image_path) }}" class="img-fluid w-100" style="max-height: 450px; object-fit: contain; background-color: #000;">
+                        {% else %}
+                            <div class="bg-dark text-center py-5">
+                                <span class="text-muted">No Image Available</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="thumbnails d-flex gap-2 overflow-auto pb-2">
+                        {% if main_image %}
+                            <img src="{{ url_for('static', filename='uploads/' + main_image.image_path) }}" 
+                                 class="img-thumbnail bg-dark border-secondary cursor-pointer" 
+                                 style="width: 80px; height: 60px; object-fit: cover; cursor: pointer;"
+                                 onclick="changeMainImage(this.src)">
+                        {% endif %}
+                        {% for img in other_images %}
+                            <img src="{{ url_for('static', filename='uploads/' + img.image_path) }}" 
+                                 class="img-thumbnail bg-dark border-secondary cursor-pointer" 
+                                 style="width: 80px; height: 60px; object-fit: cover; cursor: pointer;"
+                                 onclick="changeMainImage(this.src)">
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Project Info -->
+                <div class="col-lg-5">
+                    <h1 class="h3 mb-3">{{ project.title }}</h1>
+                    <p class="text-muted small mb-4">Created on {{ project.created_at.strftime('%B %d, %Y') }}</p>
+                    
+                    <h5 class="h6 mb-2">Tech Stack</h5>
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        {% for tech in project.stack %}
+                            <span class="badge bg-dark border border-secondary text-muted">{{ tech }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <h5 class="h6 mb-2">Description</h5>
+                    <div class="text-muted mb-4" style="white-space: pre-wrap;">{{ project.description }}</div>
+
+                    {% if current_user == project.author %}
+                        <div class="d-grid gap-2">
+                            <a href="#" class="btn btn-outline-secondary btn-sm">Edit Project</a>
+                            <a href="#" class="btn btn-outline-danger btn-sm">Delete Project</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function changeMainImage(src) {
+    document.getElementById('mainImage').src = src;
+}
+</script>
+{% endblock %}

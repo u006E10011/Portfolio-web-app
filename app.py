@@ -2,7 +2,7 @@ import os
 import random
 import string
 from datetime import datetime, timedelta
-from flask import Flask, render_template, redirect, url_for, flash, request
+from flask import Flask, render_template, redirect, url_for, flash, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
@@ -69,6 +69,19 @@ def send_verification_email(user):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/search_users')
+def search_users():
+    query = request.args.get('q', '')
+    if len(query) < 2:
+        return jsonify([])
+    
+    # Remove @ if present
+    if query.startswith('@'):
+        query = query[1:]
+        
+    users = User.query.filter(User.username.ilike(f'%{query}%')).limit(5).all()
+    return jsonify([{'username': u.username, 'avatar': url_for('static', filename='uploads/' + u.avatar)} for u in users])
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -159,10 +172,90 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
+from werkzeug.utils import secure_filename
+import uuid
+
+# ... (existing imports)
+
+def save_picture(form_picture, folder='uploads'):
+    random_hex = uuid.uuid4().hex
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + f_ext
+    picture_path = os.path.join(app.root_path, 'static', folder, picture_fn)
+    
+    # Ensure directory exists
+    os.makedirs(os.path.dirname(picture_path), exist_ok=True)
+    
+    form_picture.save(picture_path)
+    return picture_fn
+
 @app.route('/@<username>')
 def profile(username):
     user = User.query.filter_by(username=username).first_or_404()
-    return f"Profile of {user.username}"
+    projects = user.projects.order_by(Project.created_at.desc()).all()
+    return render_template('profile.html', user=user, projects=projects)
+
+@app.route('/project/<int:project_id>')
+def project_detail(project_id):
+    project = Project.query.get_or_404(project_id)
+    main_image = project.images.filter_by(is_main=True).first()
+    other_images = project.images.filter_by(is_main=False).all()
+    return render_template('project_detail.html', project=project, main_image=main_image, other_images=other_images)
+
+@app.route('/settings', methods=['GET', 'POST'])
+@login_required
+def settings():
+    form = ProfileEditForm()
+    if form.validate_on_submit():
+        if form.avatar.data:
+            picture_file = save_picture(form.avatar.data)
+            current_user.avatar = picture_file
+        
+        current_user.bio = form.bio.data
+        current_user.skills = [s.strip() for s in form.skills.data.split(',') if s.strip()]
+        
+        # Update contacts
+        contacts = {}
+        if form.telegram.data: contacts['Telegram'] = form.telegram.data
+        if form.github.data: contacts['GitHub'] = form.github.data
+        if form.linkedin.data: contacts['LinkedIn'] = form.linkedin.data
+        current_user.contacts = contacts
+        
+        db.session.commit()
+        flash('Your profile has been updated!', 'success')
+        return redirect(url_for('profile', username=current_user.username))
+    elif request.method == 'GET':
+        form.bio.data = current_user.bio
+        form.skills.data = ', '.join(current_user.skills)
+        form.telegram.data = current_user.contacts.get('Telegram', '')
+        form.github.data = current_user.contacts.get('GitHub', '')
+        form.linkedin.data = current_user.contacts.get('LinkedIn', '')
+    return render_template('settings.html', title='Settings', form=form)
+
+@app.route('/project/new', methods=['GET', 'POST'])
+@login_required
+def new_project():
+    form = ProjectForm()
+    if form.validate_on_submit():
+        project = Project(title=form.title.data, 
+                         description=form.description.data,
+                         stack=[s.strip() for s in form.stack.data.split(',') if s.strip()],
+                         author=current_user)
+        db.session.add(project)
+        db.session.commit()
+        
+        if form.images.data:
+            for i, file in enumerate(form.images.data):
+                if file.filename:
+                    picture_file = save_picture(file)
+                    is_main = (i == 0) # First image is main
+                    img = ProjectImage(image_path=picture_file, project=project, is_main=is_main)
+                    db.session.add(img)
+            db.session.commit()
+            
+        flash('Your project has been created!', 'success')
+        return redirect(url_for('profile', username=current_user.username))
+    return render_template('project_form.html', title='New Project', form=form)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

@@ -1,13 +1,62 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Моё Портфолио</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <h1>Привет! Это моё портфолио на Flask.</h1>
-    <p>Если вы видите этот текст, значит всё работает!</p>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8 text-center">
+        <h1 class="display-4 mb-4">Find Developer Portfolios</h1>
+        <p class="lead text-muted mb-5">Search by @username to explore projects and skills.</p>
+        
+        <div class="position-relative">
+            <div class="input-group input-group-lg">
+                <span class="input-group-text bg-dark border-secondary text-muted">@</span>
+                <input type="text" id="userSearch" class="form-control bg-dark border-secondary text-white" placeholder="username..." autocomplete="off">
+            </div>
+            
+            <!-- Live Search Results -->
+            <div id="searchResults" class="list-group position-absolute w-100 mt-1 shadow-lg d-none" style="z-index: 1000;">
+                <!-- Results will be injected here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const searchInput = document.getElementById('userSearch');
+const resultsDiv = document.getElementById('searchResults');
+
+searchInput.addEventListener('input', async (e) => {
+    const query = e.target.value;
+    if (query.length < 2) {
+        resultsDiv.classList.add('d-none');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/search_users?q=${encodeURIComponent(query)}`);
+        const users = await response.json();
+
+        if (users.length > 0) {
+            resultsDiv.innerHTML = users.map(user => `
+                <a href="/@${user.username}" class="list-group-item list-group-item-action bg-dark text-white border-secondary d-flex align-items-center">
+                    <img src="${user.avatar}" class="rounded-circle me-3" width="32" height="32" onerror="this.src='https://github.com/identicons/${user.username}.png'">
+                    <span>@${user.username}</span>
+                </a>
+            `).join('');
+            resultsDiv.classList.remove('d-none');
+        } else {
+            resultsDiv.innerHTML = '<div class="list-group-item bg-dark text-muted border-secondary">No users found</div>';
+            resultsDiv.classList.remove('d-none');
+        }
+    } catch (err) {
+        console.error('Search error:', err);
+    }
+});
+
+// Close results when clicking outside
+document.addEventListener('click', (e) => {
+    if (!searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
+        resultsDiv.classList.add('d-none');
+    }
+});
+</script>
+{% endblock %}

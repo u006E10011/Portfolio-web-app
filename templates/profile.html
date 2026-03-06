@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-4 col-lg-3 mb-4">
+        <div class="text-center mb-4">
+            <img src="{{ url_for('static', filename='uploads/' + user.avatar) }}" 
+                 class="rounded-circle img-thumbnail bg-dark border-secondary mb-3" 
+                 width="200" height="200"
+                 onerror="this.src='https://github.com/identicons/${user.username}.png'">
+            <h2 class="h4">@{{ user.username }}</h2>
+            <p class="text-muted">{{ user.bio if user.bio else 'No bio yet.' }}</p>
+            
+            {% if current_user == user %}
+                <a href="{{ url_for('settings') }}" class="btn btn-outline-secondary btn-sm w-100 mb-2">Edit Profile</a>
+                <a href="{{ url_for('new_project') }}" class="btn btn-primary btn-sm w-100">Add Project</a>
+            {% endif %}
+        </div>
+
+        <hr class="border-secondary">
+        
+        <h5 class="h6 mb-3">Skills</h5>
+        <div class="d-flex flex-wrap gap-2 mb-4">
+            {% for skill in user.skills %}
+                <span class="badge bg-dark border border-secondary text-muted">{{ skill }}</span>
+            {% else %}
+                <small class="text-muted">No skills listed.</small>
+            {% endfor %}
+        </div>
+
+        <h5 class="h6 mb-3">Contacts</h5>
+        <ul class="list-unstyled small">
+            {% for platform, url in user.contacts.items() %}
+                <li class="mb-2">
+                    <a href="{{ url }}" class="text-decoration-none text-muted" target="_blank">
+                        <i class="bi bi-link-45deg"></i> {{ platform }}
+                    </a>
+                </li>
+            {% else %}
+                <li class="text-muted">No contacts provided.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-md-8 col-lg-9">
+        <h3 class="h4 mb-4 border-bottom border-secondary pb-2">Projects</h3>
+        
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            {% for project in projects %}
+                <div class="col">
+                    <div class="card h-100">
+                        {% set main_img = project.images.filter_by(is_main=True).first() %}
+                        {% if main_img %}
+                            <img src="{{ url_for('static', filename='uploads/' + main_img.image_path) }}" class="card-img-top" alt="{{ project.title }}" style="height: 180px; object-fit: cover;">
+                        {% else %}
+                            <div class="bg-dark text-center py-5 border-bottom border-secondary">
+                                <span class="text-muted">No Image</span>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title h6">{{ project.title }}</h5>
+                            <p class="card-text small text-muted text-truncate">{{ project.description }}</p>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for tech in project.stack %}
+                                    <span class="badge bg-dark border border-secondary text-muted" style="font-size: 0.7rem;">{{ tech }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-secondary">
+                            <a href="#" class="btn btn-outline-primary btn-sm w-100">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted">No projects added yet.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
