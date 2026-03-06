@@ -2,25 +2,39 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:15
+    image: postgres:15-alpine
+    container_name: portfolio_db
     restart: always
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: portfolio_db
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-portfolio_db}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
 
   web:
     build: .
+    container_name: portfolio_web
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-portfolio_db}
+      SECRET_KEY: ${SECRET_KEY:-dev_secret_key}
+      MAIL_SERVER: smtp.yandex.ru
+      MAIL_PORT: 465
+      MAIL_USE_SSL: "True"
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_DEFAULT_SENDER: ${MAIL_USERNAME}
+    volumes:
+      - .:/app
+      - uploads_data:/app/static/uploads
     ports:
       - "5000:5000"
-    environment:
-      DATABASE_URL: postgresql://user:password@db:5432/portfolio_db
     depends_on:
       - db
 
 volumes:
   postgres_data:
+  uploads_data:
