@@ -23,7 +23,9 @@
         <h5 class="h6 mb-3">Skills</h5>
         <div class="d-flex flex-wrap gap-2 mb-4">
             {% for skill in user.skills %}
-                <span class="badge bg-dark border border-secondary text-muted">{{ skill }}</span>
+                {% set colors = ['#238636', '#1f6feb', '#8957e5', '#d29922', '#f85149'] %}
+                {% set color = colors[loop.index0 % colors.length] if colors.length else '#30363d' %}
+                <span class="badge border border-secondary" style="background-color: {{ colors[loop.index0 % 5] }}; color: #fff;">{{ skill }}</span>
             {% else %}
                 <small class="text-muted">No skills listed.</small>
             {% endfor %}
@@ -63,8 +65,9 @@
                             <h5 class="card-title h6">{{ project.title }}</h5>
                             <p class="card-text small text-muted text-truncate">{{ project.description }}</p>
                             <div class="d-flex flex-wrap gap-1">
+                                {% set colors = ['#238636', '#1f6feb', '#8957e5', '#d29922', '#f85149'] %}
                                 {% for tech in project.stack %}
-                                    <span class="badge bg-dark border border-secondary text-muted" style="font-size: 0.7rem;">{{ tech }}</span>
+                                    <span class="badge border border-secondary" style="background-color: {{ colors[loop.index0 % 5] }}; color: #fff; font-size: 0.7rem;">{{ tech }}</span>
                                 {% endfor %}
                             </div>
                         </div>

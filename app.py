@@ -245,9 +245,10 @@ def new_project():
         db.session.add(project)
         db.session.commit()
         
-        if form.images.data:
-            for i, file in enumerate(form.images.data):
-                if file.filename:
+        files = request.files.getlist('images')
+        if files:
+            for i, file in enumerate(files):
+                if file and file.filename:
                     picture_file = save_picture(file)
                     is_main = (i == 0) # First image is main
                     img = ProjectImage(image_path=picture_file, project=project, is_main=is_main)
@@ -257,6 +258,68 @@ def new_project():
         flash('Your project has been created!', 'success')
         return redirect(url_for('profile', username=current_user.username))
     return render_template('project_form.html', title='New Project', form=form)
+
+@app.route('/project/<int:project_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_project(project_id):
+    project = Project.query.get_or_404(project_id)
+    if project.author != current_user:
+        abort(403)
+    
+    form = ProjectForm()
+    if form.validate_on_submit():
+        project.title = form.title.data
+        project.description = form.description.data
+        project.stack = [s.strip() for s in form.stack.data.split(',') if s.strip()]
+        
+        files = request.files.getlist('images')
+        if files and files[0].filename:
+            # If new images uploaded, we can either append or replace. 
+            # For now, let's append new ones.
+            for file in files:
+                if file and file.filename:
+                    picture_file = save_picture(file)
+                    # Check if project already has a main image
+                    has_main = project.images.filter_by(is_main=True).first() is not None
+                    img = ProjectImage(image_path=picture_file, project=project, is_main=not has_main)
+                    db.session.add(img)
+        
+        db.session.commit()
+        flash('Your project has been updated!', 'success')
+        return redirect(url_for('project_detail', project_id=project.id))
+    elif request.method == 'GET':
+        form.title.data = project.title
+        form.description.data = project.description
+        form.stack.data = ', '.join(project.stack)
+    
+    return render_template('project_form.html', title='Edit Project', form=form, project=project)
+
+@app.route('/project/image/<int:image_id>/delete', methods=['POST'])
+@login_required
+def delete_project_image(image_id):
+    image = ProjectImage.query.get_or_404(image_id)
+    if image.project.author != current_user:
+        abort(403)
+    
+    project_id = image.project_id
+    was_main = image.is_main
+    
+    # Delete file from disk
+    try:
+        os.remove(os.path.join(app.root_path, 'static/uploads', image.image_path))
+    except:
+        pass
+        
+    db.session.delete(image)
+    
+    # If we deleted the main image, set another one as main
+    if was_main:
+        next_image = ProjectImage.query.filter_by(project_id=project_id).first()
+        if next_image:
+            next_image.is_main = True
+            
+    db.session.commit()
+    return jsonify({'success': True})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
