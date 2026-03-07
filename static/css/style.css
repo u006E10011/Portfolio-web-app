@@ -1,0 +1,80 @@
+:root {
+    --gh-bg: #0d1117;
+    --gh-bg-secondary: #161b22;
+    --gh-border: #30363d;
+    --gh-text: #c9d1d9;
+    --gh-text-muted: #8b949e;
+    --gh-link: #58a6ff;
+    --gh-success: #238636;
+}
+
+body {
+    background-color: var(--gh-bg);
+    color: var(--gh-text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+.navbar {
+    background-color: var(--gh-bg-secondary);
+    border-bottom: 1px solid var(--gh-border);
+}
+
+.card {
+    background-color: var(--gh-bg-secondary);
+    border: 1px solid var(--gh-border);
+    color: var(--gh-text);
+}
+
+.form-control, .form-select, textarea {
+    background-color: var(--gh-bg) !important;
+    border: 1px solid var(--gh-border) !important;
+    color: var(--gh-text) !important;
+}
+
+.form-control:focus, .form-select:focus, textarea:focus {
+    background-color: var(--gh-bg) !important;
+    border-color: var(--gh-link) !important;
+    color: var(--gh-text) !important;
+    box-shadow: none !important;
+}
+
+input::placeholder, textarea::placeholder {
+    color: var(--gh-text-muted) !important;
+}
+
+/* Fix for breadcrumbs in dark theme */
+.breadcrumb-item + .breadcrumb-item::before {
+    color: var(--gh-text-muted);
+}
+
+.breadcrumb-item a {
+    color: var(--gh-link);
+}
+
+.btn-primary {
+    background-color: var(--gh-success);
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #2ea043;
+}
+
+.sidebar {
+    border-right: 1px solid var(--gh-border);
+    min-height: calc(100vh - 56px);
+}
+
+.nav-link {
+    color: var(--gh-text);
+}
+
+.nav-link:hover {
+    color: var(--gh-link);
+}
+
+.alert {
+    background-color: var(--gh-bg-secondary);
+    border: 1px solid var(--gh-border);
+    color: var(--gh-text);
+}

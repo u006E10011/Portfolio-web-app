@@ -40,9 +40,12 @@
                 </div>
 
                 <div class="mb-4">
-                    {{ form.images.label(class="form-label") }}
-                    {{ form.images(class="form-control", multiple=True, id="imageInput") }}
-                    <div class="form-text text-muted">You can select multiple images. The first one will be the cover.</div>
+                    <label class="form-label">Project Images</label>
+                    <div class="d-grid mb-2">
+                        <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('imageInput').click()">Add Images</button>
+                        <input type="file" id="imageInput" name="images" class="d-none" multiple accept="image/*">
+                    </div>
+                    <div class="form-text text-muted">The first image will be the cover. You can add more by clicking the button again.</div>
                     
                     <!-- Preview for NEW images -->
                     <div id="newImagePreview" class="d-flex flex-wrap gap-2 mt-3"></div>
@@ -57,7 +60,7 @@
                                          style="width: 100px; height: 75px; object-fit: cover;">
                                     <button type="button" 
                                             class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0" 
-                                            style="width: 20px; height: 20px; line-height: 1;"
+                                            style="width: 20px; height: 20px; line-height: 1; border-radius: 50%;"
                                             onclick="deleteExistingImage({{ img.id }})">&times;</button>
                                 </div>
                             {% endfor %}
@@ -75,26 +78,55 @@
 </div>
 
 <script>
-// Preview for NEWLY selected images
+let selectedFiles = [];
+
+// Handle NEW images selection and accumulation
 document.getElementById('imageInput').addEventListener('change', function(e) {
     const preview = document.getElementById('newImagePreview');
-    preview.innerHTML = '';
-    
     const files = Array.from(e.target.files);
-    files.forEach((file, index) => {
+    
+    files.forEach((file) => {
+        // Add to our global array
+        selectedFiles.push(file);
+        
         const reader = new FileReader();
+        const fileIndex = selectedFiles.length - 1;
+        
         reader.onload = function(e) {
             const div = document.createElement('div');
-            div.className = 'position-relative';
+            div.className = 'position-relative new-image-item';
+            div.id = `new-img-${fileIndex}`;
             div.innerHTML = `
                 <img src="${e.target.result}" class="img-thumbnail bg-dark border-secondary" style="width: 100px; height: 75px; object-fit: cover;">
+                <button type="button" 
+                        class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0" 
+                        style="width: 20px; height: 20px; line-height: 1; border-radius: 50%;"
+                        onclick="removeNewImage(${fileIndex})">&times;</button>
                 <span class="badge bg-success position-absolute bottom-0 start-0 w-100" style="font-size: 0.6rem; opacity: 0.8;">New</span>
             `;
             preview.appendChild(div);
         }
         reader.readAsDataURL(file);
     });
+    
+    updateInputFiles();
 });
+
+// Remove NEW image from selection
+function removeNewImage(index) {
+    selectedFiles[index] = null; // Mark as removed
+    document.getElementById(`new-img-${index}`).remove();
+    updateInputFiles();
+}
+
+// Sync the hidden input with our selectedFiles array
+function updateInputFiles() {
+    const dataTransfer = new DataTransfer();
+    selectedFiles.forEach(file => {
+        if (file) dataTransfer.items.add(file);
+    });
+    document.getElementById('imageInput').files = dataTransfer.files;
+}
 
 // Delete EXISTING images via AJAX
 async function deleteExistingImage(imageId) {

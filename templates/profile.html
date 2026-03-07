@@ -7,7 +7,7 @@
         <div class="text-center mb-4">
             <img src="{{ url_for('static', filename='uploads/' + user.avatar) }}" 
                  class="rounded-circle img-thumbnail bg-dark border-secondary mb-3" 
-                 width="200" height="200"
+                 style="width: 200px; height: 200px; object-fit: cover;"
                  onerror="this.src='https://github.com/identicons/{{ user.username }}.png'">
             <h2 class="h4">@{{ user.username }}</h2>
             <p class="text-muted">{{ user.bio if user.bio else 'No bio yet.' }}</p>
@@ -52,17 +52,23 @@
         <div class="row row-cols-1 row-cols-md-2 g-4">
             {% for project in projects %}
                 <div class="col">
-                    <div class="card h-100">
+                    <div class="card h-100 border-secondary">
                         {% set main_img = project.images.filter_by(is_main=True).first() %}
-                        {% if main_img %}
-                            <img src="{{ url_for('static', filename='uploads/' + main_img.image_path) }}" class="card-img-top" alt="{{ project.title }}" style="height: 180px; object-fit: cover;">
-                        {% else %}
-                            <div class="bg-dark text-center py-5 border-bottom border-secondary">
-                                <span class="text-muted">No Image</span>
-                            </div>
-                        {% endif %}
+                        <a href="{{ url_for('project_detail', project_id=project.id) }}">
+                            {% if main_img %}
+                                <img src="{{ url_for('static', filename='uploads/' + main_img.image_path) }}" class="card-img-top" alt="{{ project.title }}" style="height: 180px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-dark text-center py-5 border-bottom border-secondary">
+                                    <span class="text-muted">No Image</span>
+                                </div>
+                            {% endif %}
+                        </a>
                         <div class="card-body">
-                            <h5 class="card-title h6">{{ project.title }}</h5>
+                            <h5 class="card-title h6">
+                                <a href="{{ url_for('project_detail', project_id=project.id) }}" class="text-decoration-none text-white">
+                                    {{ project.title }}
+                                </a>
+                            </h5>
                             <p class="card-text small text-muted text-truncate">{{ project.description }}</p>
                             <div class="d-flex flex-wrap gap-1">
                                 {% set colors = ['#238636', '#1f6feb', '#8957e5', '#d29922', '#f85149'] %}
@@ -71,8 +77,11 @@
                                 {% endfor %}
                             </div>
                         </div>
-                        <div class="card-footer bg-transparent border-secondary">
-                            <a href="#" class="btn btn-outline-primary btn-sm w-100">View Details</a>
+                        <div class="card-footer bg-transparent border-secondary d-flex gap-2">
+                            <a href="{{ url_for('project_detail', project_id=project.id) }}" class="btn btn-outline-primary btn-sm flex-grow-1">View Details</a>
+                            {% if current_user == user %}
+                                <a href="{{ url_for('edit_project', project_id=project.id) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

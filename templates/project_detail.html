@@ -47,8 +47,9 @@
                     
                     <h5 class="h6 mb-2">Tech Stack</h5>
                     <div class="d-flex flex-wrap gap-2 mb-4">
+                        {% set colors = ['#238636', '#1f6feb', '#8957e5', '#d29922', '#f85149'] %}
                         {% for tech in project.stack %}
-                            <span class="badge bg-dark border border-secondary text-muted">{{ tech }}</span>
+                            <span class="badge border border-secondary" style="background-color: {{ colors[loop.index0 % 5] }}; color: #fff;">{{ tech }}</span>
                         {% endfor %}
                     </div>
 

@@ -56,8 +56,7 @@ def send_verification_email(user):
     user.code_expires_at = datetime.utcnow() + timedelta(minutes=5)
     db.session.commit()
     
-    msg = Message('Your Verification Code',
-                  recipients=[user.email])
+    msg = Message('Your Verification Code', recipients=[user.email])
     msg.body = f'Your verification code is: {code}. It will expire in 5 minutes.'
     try:
         mail.send(msg)

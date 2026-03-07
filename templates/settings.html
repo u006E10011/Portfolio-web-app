@@ -11,7 +11,7 @@
                 <div class="mb-4 text-center">
                     <img src="{{ url_for('static', filename='uploads/' + current_user.avatar) }}" 
                          class="rounded-circle img-thumbnail bg-dark border-secondary mb-3" 
-                         width="150" height="150"
+                         style="width: 200px; height: 200px; object-fit: cover;"
                          onerror="this.src='https://github.com/identicons/{{ current_user.username }}.png'">
                     <div class="mb-3">
                         {{ form.avatar.label(class="form-label d-block") }}
