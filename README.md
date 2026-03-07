@@ -34,7 +34,7 @@ sudo apt install -y ca-certificates gnupg
 sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
-2. Добавление официального GPG ключа Docker
+2. Добавьте официальный GPG ключа Docker
 
 ```bash
 sudo install -m 0755 -d /etc/apt/keyrings
